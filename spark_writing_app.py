@@ -8,9 +8,9 @@ import calendar
 import time
 
 # ==========================================
-# 🔑 노션 연결 열쇠
+# 🔑 노션 연결 열쇠 (여기를 채워주세요!)
 # ==========================================
-NOTION_TOKEN = "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"
+NOTION_TOKEN = "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"
 DATABASE_ID = "391ca0b82d5380f9a277f56c69f8ed1e"
 
 # 기존 로컬 데이터 저장용 파일
@@ -27,7 +27,8 @@ def load_data():
         "categories": ["소설1", "소설2", "소설3", "일기", "교육 에세이"],
         "writings": [],
         "notes": [],
-        "daily_stats": {}
+        "daily_stats": {},
+        "openai_key": "" # API 키 저장 공간 추가!
     }
 
 def save_data(data):
@@ -40,6 +41,7 @@ if "data" not in st.session_state:
     if "notes" not in raw_data: raw_data["notes"] = []
     if "daily_stats" not in raw_data: raw_data["daily_stats"] = {}
     if "categories" not in raw_data: raw_data["categories"] = ["소설1", "소설2", "소설3", "일기", "교육 에세이"]
+    if "openai_key" not in raw_data: raw_data["openai_key"] = ""
     st.session_state.data = raw_data
 data = st.session_state.data
 
@@ -99,14 +101,15 @@ def fetch_from_notion():
 # 페이지 설정
 st.set_page_config(page_title="스파크 라이팅 (Spark Writing)", page_icon="🔥", layout="wide")
 
-# 💡 스타일 커스텀 (눈이 편안하도록 전체 글씨를 진하게 덮어씌웠습니다!)
+# 💡 스타일 커스텀 (아이콘 버그를 원천 차단하는 정밀 타격 폰트 코드!)
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap');
     
-    html, body, [class*="css"], [class*="st-"], .st-emotion-cache-16txtl3, * { 
+    /* 시스템 아이콘을 제외한 실제 글씨 영역만 폰트 적용 */
+    .main-title, .sub-title, h1, h2, h3, p, label, button, textarea, input, [data-baseweb="tab"], .stMarkdown { 
         font-family: 'Gowun Dodum', sans-serif !important; 
-        font-weight: 600 !important; /* 글씨 굵기를 진하게 강제 적용 */
+        font-weight: 600 !important; /* 글씨 굵기 진하게 */
     }
     
     .main-title { font-size: 2.5rem; font-weight: 900 !important; color: #FF4B4B; text-align: center; margin-bottom: 5px; }
@@ -121,9 +124,21 @@ st.markdown("""
 st.markdown('<div class="main-title">🔥 스파크 라이팅</div>', unsafe_allow_html=True)
 st.markdown('<div class="sub-title">타오르고, 남기고, 영원히 보관하는 나만의 창작 공간</div>', unsafe_allow_html=True)
 
-# 사이드바 설정
+# 사이드바 설정 (API 키 자동 기억 시스템)
 st.sidebar.header("🛠️ 시스템 설정")
-openai_key = st.sidebar.text_input("OpenAI API Key 입력", type="password", help="칭찬 봇 및 맞춤법 검사기를 위해 필요합니다.")
+saved_key = data.get("openai_key", "")
+openai_key = st.sidebar.text_input(
+    "OpenAI API Key 입력", 
+    value=saved_key, 
+    type="password", 
+    help="한 번만 입력해두시면 자동으로 기억합니다."
+)
+
+# 사용자가 새 키를 입력하면 자동으로 파일에 저장
+if openai_key != saved_key:
+    data["openai_key"] = openai_key
+    save_data(data)
+    st.rerun()
 
 st.sidebar.markdown("---")
 st.sidebar.subheader("🤖 AI 칭찬 봇 성향 조절")
